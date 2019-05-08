@@ -49,6 +49,15 @@ static int schedule_process(struct schedproc * rmp, unsigned flags);
 
 static unsigned cpu_proc[CONFIG_MAX_CPUS];
 
+
+/* MODIFICADO: implementacao da funcao rand */
+static unsigned long int next = 1;
+int rando(void) {
+      next = next * 1103515245 + 12345;
+      return (unsigned int)(next/65536) % 32768;
+}
+
+
 /* MODIFICADO:  funcao que gera um valor aleatorio de 1 ate o valor total de tickets. Enquanto ha processos, vamos acumular no winner a soma ate que o
                 random seja ultrapassada, nesse caso, retornaremos o processo em questao, de indice i do vetor schedproc, que foi o vencedor.
                 Caso ninguem seja o vencedor, o ultimo eh retornado.*/
@@ -66,13 +75,6 @@ struct schedproc *lottery(void) {
         }
     }
     return proc;
-}
-
-/* Implementation of random function */
-static unsigned long int next = 1;
-int rando(void) {
-      next = next * 1103515245 + 12345;
-      return (unsigned int)(next/65536) % 32768;
 }
 
 static void pick_cpu(struct schedproc * proc)
