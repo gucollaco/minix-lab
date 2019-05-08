@@ -55,7 +55,7 @@ static unsigned cpu_proc[CONFIG_MAX_CPUS];
 struct schedproc *lottery(void) {
     struct schedproc *proc;
     int i, random, winner = 0;
-    random = 1;//(rand()%total_tickets)+1;
+    random = (rando()%total_tickets)+1;
 
     for (i = 0; i < NR_PROCS; i++) {
         proc = &schedproc[i];
@@ -66,6 +66,14 @@ struct schedproc *lottery(void) {
         }
     }
     return proc;
+}
+
+/* Implementation of rand function */
+static unsigned long int next = 1;
+int rando(void) 
+      next = next * 1103515245 + 12345;
+      printf("asdasdsad\n");
+      return (unsigned int)(next/65536) % 32768;
 }
 
 static void pick_cpu(struct schedproc * proc)
@@ -234,7 +242,7 @@ int do_start_scheduling(message *m_ptr)
 
 		rmp->priority = MIN_USER_Q; /* MODIFICADO: colocando prioridade minima para processos de usuarios, pois vamos desconsiderar a mudanca de prioridade */
 		rmp->time_slice = schedproc[parent_nr_n].time_slice; /* Mantivemos a fatia de tempo sendo herdada */
-		rmp->tickets = MAX_TICKETS - (1 * rmp->priority);// + (rand()%10) + 1; /* MODIFICADO: quando processo for filho, vamos sortear a quantidade de tickets, para que ele tenha uma chance justa de ser executado, entre 5 e 15, considerando que o maximo de tickets possivel eh 20*/
+		rmp->tickets = MAX_TICKETS - (1 * rmp->priority) + (rando()%10) + 1; /* MODIFICADO: quando processo for filho, vamos sortear a quantidade de tickets, para que ele tenha uma chance justa de ser executado, entre 5 e 15, considerando que o maximo de tickets possivel eh 20*/
 		total_tickets += rmp->tickets; /* MODIFICADO: somando os tickets do processo no total de tickets */
 		break;
 		
