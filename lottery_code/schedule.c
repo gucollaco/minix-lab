@@ -254,8 +254,8 @@ int do_start_scheduling(message *m_ptr)
 
 	/* Schedule the process, giving it some quantum */
 	pick_cpu(rmp);
-	struct schedproc *proc;
-	proc = do_lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
+	struct schedproc *proc_winner;
+	proc_winner = do_lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
 	while ((rv = schedule_process(proc_winner, SCHEDULE_CHANGE_ALL)) == EBADCPU) { /* MODIFICADO: passando o processo vencedor como parametro */
 		/* don't try this CPU ever again */
 		cpu_proc[proc_winner->cpu] = CPU_DEAD; /* MODIFICADO: usando o processo vencedor */
