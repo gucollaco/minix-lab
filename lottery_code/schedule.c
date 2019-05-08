@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <minix/com.h>
 #include <machine/archtypes.h>
+#include <stdlib.h> /* MODIFICADO: include para usar a funcao rand */
 
 static unsigned balance_timeout;
 static unsigned total_tickets = 0; /* MODIFICADO: variavel para manter a quantidade total de tickets */
