@@ -1,3 +1,5 @@
+// Gustavo Martins Collaço 111851
+// Tamires Beatriz da Silva Lucena 111866
 /* This file contains the scheduling policy for SCHED
  *
  * The entry points are:
@@ -50,8 +52,8 @@ static unsigned cpu_proc[CONFIG_MAX_CPUS];
 /* MODIFICADO:  funcao que gera um valor aleatorio de 1 ate o valor total de tickets. Enquanto ha processos, vamos acumular no winner a soma ate que o
                 random seja ultrapassada, nesse caso, retornaremos o processo em questao, de indice i do vetor schedproc, que foi o vencedor.
                 Caso ninguem seja o vencedor, o ultimo eh retornado.*/
-register struct schedproc *do_lottery(void) {
-    register struct schedproc *proc;
+struct schedproc *do_lottery(void) {
+    struct schedproc *proc;
     int i, random, winner = 0;
     random = (rand()%total_tickets)+1;
 
@@ -121,7 +123,7 @@ int do_noquantum(message *m_ptr)
 		rmp->priority += 1; /* lower priority */
 	}
 
-	register struct schedproc *proc_winner = do_lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
+	struct schedproc *proc_winner = do_lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
 
 	if ((rv = schedule_process_local(proc_winner)) != OK) {
 		return rv;
@@ -252,7 +254,7 @@ int do_start_scheduling(message *m_ptr)
 
 	/* Schedule the process, giving it some quantum */
 	pick_cpu(rmp);
-	register struct schedproc *proc_winner = do_lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
+	struct schedproc *proc_winner = do_lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
 	while ((rv = schedule_process(proc_winner, SCHEDULE_CHANGE_ALL)) == EBADCPU) { /* MODIFICADO: passando o processo vencedor como parametro */
 		/* don't try this CPU ever again */
 		cpu_proc[proc_winner->cpu] = CPU_DEAD; /* MODIFICADO: usando o processo vencedor */

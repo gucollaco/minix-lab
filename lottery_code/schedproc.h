@@ -1,3 +1,5 @@
+// Gustavo Martins Collaço 111851
+// Tamires Beatriz da Silva Lucena 111866
 /* This table has one slot per process.  It contains scheduling information
  * for each process.
  */
