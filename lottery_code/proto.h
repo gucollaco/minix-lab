@@ -3,7 +3,6 @@
 /* Function prototypes. */
 
 struct schedproc;
-int total_tickets = 0; /* MODIFICADO: variavel para manter a quantidade total de tickets */
 
 /* main.c */
 int main(void);
