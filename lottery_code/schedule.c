@@ -68,11 +68,10 @@ struct schedproc *lottery(void) {
     return proc;
 }
 
-/* Implementation of rand function */
+/* Implementation of random function */
 static unsigned long int next = 1;
-int rando(void) 
+int rando(void) {
       next = next * 1103515245 + 12345;
-      printf("asdasdsad\n");
       return (unsigned int)(next/65536) % 32768;
 }
 
