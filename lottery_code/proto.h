@@ -3,17 +3,18 @@
 /* Function prototypes. */
 
 struct schedproc;
+int total_tickets = 0; /* MODIFICADO: variavel para manter a quantidade total de tickets */
 
 /* main.c */
 int main(void);
 void setreply(int proc_nr, int result);
 
 /* schedule.c */
+struct schedproc do_lottery(void); /* MODIFICADO: funcao que realiza o sorteio do processo */
 int do_noquantum(message *m_ptr);
 int do_start_scheduling(message *m_ptr);
 int do_stop_scheduling(message *m_ptr);
 int do_nice(message *m_ptr);
-struct schedproc do_lottery(void); /* MODIFICADO: funcao que realiza o sorteio do processo */
 void init_scheduling(void);
 void balance_queues(void);
 
