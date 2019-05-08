@@ -1,5 +1,3 @@
-// Gustavo Martins Collaço 111851
-// Tamires Beatriz da Silva Lucena 111866
 /* This file contains the scheduling policy for SCHED
  *
  * The entry points are:
@@ -16,10 +14,8 @@
 #include <machine/archtypes.h>
 
 static unsigned balance_timeout;
-static unsigned total_tickets = 0; /* MODIFICADO: variavel para manter a quantidade total de tickets */
 
 #define BALANCE_TIMEOUT	5 /* how often to balance queues in seconds */
-#define MAX_TICKETS	20 /* MODIFICADO: quantidade maxima de tickets que podem ser atribuidos */
 
 static int schedule_process(struct schedproc * rmp, unsigned flags);
 
@@ -48,25 +44,6 @@ static int schedule_process(struct schedproc * rmp, unsigned flags);
 #define is_system_proc(p)	((p)->parent == RS_PROC_NR)
 
 static unsigned cpu_proc[CONFIG_MAX_CPUS];
-
-/* MODIFICADO:  funcao que gera um valor aleatorio de 1 ate o valor total de tickets. Enquanto ha processos, vamos acumular no winner a soma ate que o
-                random seja ultrapassada, nesse caso, retornaremos o processo em questao, de indice i do vetor schedproc, que foi o vencedor.
-                Caso ninguem seja o vencedor, o ultimo eh retornado.*/
-struct schedproc *lottery(void) {
-    struct schedproc *proc;
-    int i, random, winner = 0;
-    random = (rand()%total_tickets)+1;
-
-    for (i = 0; i < NR_PROCS; i++) {
-        proc = &schedproc[i];
-
-        if (proc->flags & IN_USE) {
-            winner += proc->tickets;
-            if (winner >= random) return proc;
-        }
-    }
-    return proc;
-}
 
 static void pick_cpu(struct schedproc * proc)
 {
@@ -123,9 +100,7 @@ int do_noquantum(message *m_ptr)
 		rmp->priority += 1; /* lower priority */
 	}
 
-	struct schedproc *proc_winner = lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
-
-	if ((rv = schedule_process_local(proc_winner)) != OK) {
+	if ((rv = schedule_process_local(rmp)) != OK) {
 		return rv;
 	}
 	return OK;
@@ -155,8 +130,7 @@ int do_stop_scheduling(message *m_ptr)
 	cpu_proc[rmp->cpu]--;
 #endif
 	rmp->flags = 0; /*&= ~IN_USE;*/
-    total_tickets -= rmp->tickets;  /* MODIFICADO: quando o processo nao precisa mais ser escalonado, reduzir seus tickets do total */
-    rmp->tickets = 0;               /* MODIFICADO: colocar os tickets do processo como 0 */
+
 	return OK;
 }
 
@@ -218,10 +192,8 @@ int do_start_scheduling(message *m_ptr)
 		/* We have a special case here for system processes, for which
 		 * quanum and priority are set explicitly rather than inherited 
 		 * from the parent */
-		rmp->priority   = rmp->max_priority; /* Quanto maior a prioridade, menor o numero */
+		rmp->priority   = rmp->max_priority;
 		rmp->time_slice = m_ptr->m_lsys_sched_scheduling_start.quantum;
-		rmp->tickets = MAX_TICKETS;     /* MODIFICADO: colocando o maximo de tickets, por ser um processo de sistema */
-		total_tickets += rmp->tickets;  /* MODIFICADO: somando os tickets do processo no total de tickets */
 		break;
 		
 	case SCHEDULING_INHERIT:
@@ -232,10 +204,8 @@ int do_start_scheduling(message *m_ptr)
 				&parent_nr_n)) != OK)
 			return rv;
 
-		rmp->priority = MIN_USER_Q; /* MODIFICADO: colocando prioridade minima para processos de usuarios, pois vamos desconsiderar a mudanca de prioridade */
-		rmp->time_slice = schedproc[parent_nr_n].time_slice; /* Mantivemos a fatia de tempo sendo herdada */
-		rmp->tickets = MAX_TICKETS - (1 * rmp->priority) + (rand()%10) + 1; /* MODIFICADO: quando processo for filho, vamos sortear a quantidade de tickets, para que ele tenha uma chance justa de ser executado, entre 5 e 15, considerando que o maximo de tickets possivel eh 20*/
-		total_tickets += rmp->tickets; /* MODIFICADO: somando os tickets do processo no total de tickets */
+		rmp->priority = schedproc[parent_nr_n].priority;
+		rmp->time_slice = schedproc[parent_nr_n].time_slice;
 		break;
 		
 	default: 
@@ -254,12 +224,12 @@ int do_start_scheduling(message *m_ptr)
 
 	/* Schedule the process, giving it some quantum */
 	pick_cpu(rmp);
-	struct schedproc *proc_winner = lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
-	while ((rv = schedule_process(proc_winner, SCHEDULE_CHANGE_ALL)) == EBADCPU) { /* MODIFICADO: passando o processo vencedor como parametro */
+	while ((rv = schedule_process(rmp, SCHEDULE_CHANGE_ALL)) == EBADCPU) {
 		/* don't try this CPU ever again */
-		cpu_proc[proc_winner->cpu] = CPU_DEAD; /* MODIFICADO: usando o processo vencedor */
-		pick_cpu(proc_winner); /* MODIFICADO: usando o processo vencedor */
+		cpu_proc[rmp->cpu] = CPU_DEAD;
+		pick_cpu(rmp);
 	}
+
 	if (rv != OK) {
 		printf("Sched: Error while scheduling process, kernel replied %d\n",
 			rv);
@@ -286,7 +256,7 @@ int do_nice(message *m_ptr)
 	struct schedproc *rmp;
 	int rv;
 	int proc_nr_n;
-	unsigned new_q, old_q, old_max_q, old_t; /* MODIFICADO: variavel para guardar a antiga quantidade de tickets */
+	unsigned new_q, old_q, old_max_q;
 
 	/* check who can send you requests */
 	if (!accept_message(m_ptr))
@@ -307,12 +277,7 @@ int do_nice(message *m_ptr)
 	/* Store old values, in case we need to roll back the changes */
 	old_q     = rmp->priority;
 	old_max_q = rmp->max_priority;
-	old_t = rmp->tickets; /* MODIFICADO: guardando a quantidade antiga de tickets */
 
-    /* MODIFICADO: se valor da prioridade max for grande (baixa prioridade), vamos reduzir bastante tickets, diminuindo a chance de ser escolhido */
-    rmp->tickets = (rmp->tickets <= new_q) ? 1 : (rmp->tickets - new_q);
-    total_tickets -= (old_t - rmp->tickets); /* MODIFICADO: removendo do total, os tickets retirados */
-    
 	/* Update the proc entry and reschedule the process */
 	rmp->max_priority = rmp->priority = new_q;
 
@@ -321,8 +286,6 @@ int do_nice(message *m_ptr)
 		 * back the changes to proc struct */
 		rmp->priority     = old_q;
 		rmp->max_priority = old_max_q;
-        total_tickets    += (old_t - rmp->tickets);   /* MODIFICADO: caso deu problema, voltar para a quantidade antiga de tickets no total */
-        rmp->tickets      = old_t;                  /* MODIFICADO: caso deu problema, voltar para a quantidade antiga de tickets no processo */
 	}
 
 	return rv;
@@ -395,7 +358,8 @@ void balance_queues(void)
 	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
 		if (rmp->flags & IN_USE) {
 			if (rmp->priority > rmp->max_priority) {
-				schedule_process_local(rmp); /* MODIFICADO: prioridade nao mais sendo reduzida quando se esgota o quantum do processo */
+				rmp->priority -= 1; /* increase priority */
+				schedule_process_local(rmp);
 			}
 		}
 	}

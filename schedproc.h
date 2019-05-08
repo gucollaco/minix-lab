@@ -1,5 +1,3 @@
-// Gustavo Martins Collaço 111851
-// Tamires Beatriz da Silva Lucena 111866
 /* This table has one slot per process.  It contains scheduling information
  * for each process.
  */
@@ -28,7 +26,6 @@ EXTERN struct schedproc {
 	unsigned flags;		/* flag bits */
 
 	/* User space scheduling */
-	unsigned tickets; /* MODIFICADO: manter a quantidade de tickets do processo */
 	unsigned max_priority;	/* this process' highest allowed priority */
 	unsigned priority;		/* the process' current priority */
 	unsigned time_slice;		/* this process's time slice */
