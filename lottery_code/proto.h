@@ -9,7 +9,7 @@ int main(void);
 void setreply(int proc_nr, int result);
 
 /* schedule.c */
-struct schedproc lottery(void); /* MODIFICADO: funcao que realiza o sorteio do processo */
+struct schedproc *lottery(void); /* MODIFICADO: funcao que realiza o sorteio do processo */
 int do_noquantum(message *m_ptr);
 int do_start_scheduling(message *m_ptr);
 int do_stop_scheduling(message *m_ptr);
