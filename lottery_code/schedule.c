@@ -311,7 +311,7 @@ int do_nice(message *m_ptr)
 
     /* MODIFICADO: se valor da prioridade max for grande (baixa prioridade), vamos reduzir bastante tickets, diminuindo a chance de ser escolhido */
     rmp->tickets = (rmp->tickets <= new_q) ? 1 : (rmp->tickets - new_q);
-    total_tickets -= (olb_t - rmp->tickets); /* MODIFICADO: removendo do total, os tickets retirados */
+    total_tickets -= (old_t - rmp->tickets); /* MODIFICADO: removendo do total, os tickets retirados */
     
 	/* Update the proc entry and reschedule the process */
 	rmp->max_priority = rmp->priority = new_q;
@@ -321,7 +321,7 @@ int do_nice(message *m_ptr)
 		 * back the changes to proc struct */
 		rmp->priority     = old_q;
 		rmp->max_priority = old_max_q;
-        total_tickets    += (old_b - rmp->tickets);   /* MODIFICADO: caso deu problema, voltar para a quantidade antiga de tickets no total */
+        total_tickets    += (old_t - rmp->tickets);   /* MODIFICADO: caso deu problema, voltar para a quantidade antiga de tickets no total */
         rmp->tickets      = old_t;                  /* MODIFICADO: caso deu problema, voltar para a quantidade antiga de tickets no processo */
 	}
 
