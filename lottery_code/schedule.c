@@ -53,7 +53,9 @@ static unsigned cpu_proc[CONFIG_MAX_CPUS];
                 Caso ninguem seja o vencedor, o ultimo eh retornado.*/
 struct schedproc *do_lottery(void) {
     struct schedproc *proc;
-    int i, random, winner = 0;
+    int i;
+    int random;
+    int winner = 0;
     random = (rand()%total_tickets)+1;
 
     for (i = 0; i < NR_PROCS; i++) {
@@ -254,12 +256,12 @@ int do_start_scheduling(message *m_ptr)
 
 	/* Schedule the process, giving it some quantum */
 	pick_cpu(rmp);
-	struct schedproc *proc_winner;
-	proc_winner = do_lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
-	while ((rv = schedule_process(proc_winner, SCHEDULE_CHANGE_ALL)) == EBADCPU) { /* MODIFICADO: passando o processo vencedor como parametro */
+	struct schedproc *proc;
+	proc = do_lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
+	while ((rv = schedule_process(proc, SCHEDULE_CHANGE_ALL)) == EBADCPU) { /* MODIFICADO: passando o processo vencedor como parametro */
 		/* don't try this CPU ever again */
-		cpu_proc[proc_winner->cpu] = CPU_DEAD; /* MODIFICADO: usando o processo vencedor */
-		pick_cpu(proc_winner); /* MODIFICADO: usando o processo vencedor */
+		cpu_proc[proc->cpu] = CPU_DEAD; /* MODIFICADO: usando o processo vencedor */
+		pick_cpu(proc); /* MODIFICADO: usando o processo vencedor */
 	}
 	if (rv != OK) {
 		printf("Sched: Error while scheduling process, kernel replied %d\n",
