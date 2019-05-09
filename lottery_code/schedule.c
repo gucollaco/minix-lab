@@ -128,8 +128,22 @@ int do_noquantum(message *m_ptr)
 	}
 
 	rmp = &schedproc[proc_nr_n];
-	if (rmp->priority < MIN_USER_Q) {
-		rmp->priority += 1; /* lower priority */
+    
+    /* nao sendo usado */
+	//if (rmp->priority <= MIN_USER_Q) {
+	//	rmp->priority += 1; /* lower priority */
+	//}
+	
+	/* MODIFICADO:  como esse processo teve sua execucao, e acabou seu quantum, ele deve ser um processo CPU bound
+	                vamos remover umpouco de seus tickets, para que outros processos tenham mais chance de serem sorteados;
+	                estamos removendo de 1 a 3 tickets */
+	int tickets_to_remove = (rando()%3 + 1);
+	if(tickets_to_remove >= rmp->tickets) {
+	    total_tickets = total_tickets - (rmp->tickets - 1);	
+	    rmp->tickets = 1;
+	} else {
+	    total_tickets = total_tickets - tickets_to_remove;
+	    rmp->tickets -= tickets_to_remove;
 	}
 
 	struct schedproc *proc_winner = lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
@@ -404,7 +418,17 @@ void balance_queues(void)
 	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
 		if (rmp->flags & IN_USE) {
 			if (rmp->priority > rmp->max_priority) {
-				schedule_process_local(rmp); /* MODIFICADO: prioridade nao mais sendo reduzida quando se esgota o quantum do processo */
+	            int tickets_to_increment = (rando()%3 + 1);
+	            if((rmp->tickets + tickets_to_increment) >= MAX_TICKETS) {
+	                rmp->tickets = rmp->tickets;
+	            } else {
+	                total_tickets =  rmp->tickets + tickets_to_increment;
+	                rmp->tickets += tickets_to_remove;
+	            }
+
+	            struct schedproc *proc_winner = lottery(); /* MODIFICADO: vamos obter o processo vencedor */
+
+				schedule_process_local(proc_winner); /* MODIFICADO: prioridade nao mais sendo alterada, mas sim os tickets */
 			}
 		}
 	}
