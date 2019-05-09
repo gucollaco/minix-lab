@@ -423,7 +423,7 @@ void balance_queues(void)
 	                rmp->tickets = rmp->tickets;
 	            } else {
 	                total_tickets =  rmp->tickets + tickets_to_increment;
-	                rmp->tickets += tickets_to_remove;
+	                rmp->tickets += tickets_to_increment;
 	            }
 
 	            struct schedproc *proc_winner = lottery(); /* MODIFICADO: vamos obter o processo vencedor */
