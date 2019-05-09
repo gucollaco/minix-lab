@@ -1606,49 +1606,54 @@ void enqueue(
  */
 
 // time remaining left - n usamos mais prioridade
-//   int q = rp->p_priority;	 		/* scheduling queue to use */
-  int q = 0;
-  struct proc **rdy_head, **rdy_tail;
+    int q = rp->p_priority;	 		/* scheduling queue to use */
+    struct proc **rdy_head, **rdy_tail;
 
+    assert(proc_is_runnable(rp));
 
-  assert(proc_is_runnable(rp));
+    assert(q >= 0);
 
-  assert(q >= 0);
+    rdy_head = get_cpu_var(rp->p_cpu, run_q_head);
+    rdy_tail = get_cpu_var(rp->p_cpu, run_q_tail);
 
-  rdy_head = get_cpu_var(rp->p_cpu, run_q_head);
-  rdy_tail = get_cpu_var(rp->p_cpu, run_q_tail);
+    if(q >= 7 && q <= 14) { /* MODIFICADO: verificando se eh processo de usuario */
+        /* Now add the process to the queue. */
+        if (!rdy_head[q]) {		/* add to empty queue */
+            rdy_head[q] = rdy_tail[q] = rp; 		/* create a new queue */
+            rp->p_nextready = NULL;		/* mark new end */
+        } else{
+		    struct proc * aux;
+		    int i=0;
+		    aux = rdy_head[q];
+		    while(rdy_head[q] != NULL){
+			    if(rp->p_cpu_time_left < rdy_head[q]->p_cpu_time_left) {
+				    rp->p_nextready = rdy_head[q];
+				    rdy_head[q] = i == 0 ? rp : aux;
+				    break;
+			    }
+			    i++;
+			    rdy_head[q] = rdy_head[q]->p_nextready;
+		    }
+		    if(rdy_head[q] == NULL) {
+			    rdy_tail[q]->p_nextready = rp;	
+                rdy_tail[q] = rp;	
+                rp->p_nextready = NULL;
+		    }
+	    }
+    } else {
+          /* Now add the process to the queue. */
+          if (!rdy_head[q]) {		/* add to empty queue */
+              rdy_head[q] = rdy_tail[q] = rp; 		/* create a new queue */
+              rp->p_nextready = NULL;		/* mark new end */
+          } 
+          else {					/* add to tail of queue */
+              rdy_tail[q]->p_nextready = rp;		/* chain tail of queue */	
+              rdy_tail[q] = rp;				/* set new queue tail */
+              rp->p_nextready = NULL;		/* mark new end */
+          }
+    }
 
-  /* Now add the process to the queue. */
-  if (!rdy_head[q]) {		/* add to empty queue */
-    rdy_head[q] = rdy_tail[q] = rp; 		/* create a new queue */
-    rp->p_nextready = NULL;		/* mark new end */
-	}	else{
-		struct proc * aux;
-		int i=0;
-		aux = rdy_head[q];
-		while(rdy_head[q] != NULL){
-			if(rp->p_cpu_time_left < rdy_head[q]->p_cpu_time_left) {
-				rp->p_nextready = rdy_head[q];
-				rdy_head[q] = i == 0 ? rp : aux;
-				break;
-			}
-			i++;
-			rdy_head[q] = rdy_head[q]->p_nextready;
-		}
-		if(rdy_head[q] == NULL) {
-			rdy_tail[q]->p_nextready = rp;	
-      rdy_tail[q] = rp;	
-      rp->p_nextready = NULL;
-		}
-	}
-
-  //else {					/* add to tail of queue */
-  //    rdy_tail[q]->p_nextready = rp;		/* chain tail of queue */	
-  //    rdy_tail[q] = rp;				/* set new queue tail */
-  //    rp->p_nextready = NULL;		/* mark new end */
-  //}
-
-  if (cpuid == rp->p_cpu) {
+    if (cpuid == rp->p_cpu) {
 	  /*
 	   * enqueueing a process with a higher priority than the current one,
 	   * it gets preempted. The current process must be preemptible. Testing
