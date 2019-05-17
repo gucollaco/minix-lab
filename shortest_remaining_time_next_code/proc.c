@@ -1605,7 +1605,6 @@ void enqueue(
  * process is assigned to.
  */
 
-// time remaining left - n usamos mais prioridade
     int q = rp->p_priority;	 		/* scheduling queue to use */
     struct proc **rdy_head, **rdy_tail;
 
@@ -1632,15 +1631,11 @@ void enqueue(
             } else {
 		        struct proc *aux;
 		        aux = rdy_head[q];
-		        int i = 0;
-		        //while(rp->p_cpu_time_left > aux->p_nextready->p_cpu_time_left) aux = aux->p_nextready;
-		        while(aux->p_nextready) {
-		            if(rp->p_cpu_time_left > aux->p_nextready->p_cpu_time_left) {
-		                aux = aux->p_nextready;
-	                } else {
-	                    break;
-	                }
-		        }
+		        
+		        while(rp->p_cpu_time_left > aux->p_nextready->p_cpu_time_left) {
+		            aux = aux->p_nextready;
+	            }
+
 	            rp->p_nextready = aux->p_nextready;
 	            aux->p_nextready = rp;
             }
