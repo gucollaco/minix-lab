@@ -1629,7 +1629,7 @@ void enqueue(
                 rp->p_nextready = rdy_head[q];
                 rdy_head[q] = rp;
             } else if(rp->p_cpu_time_left >= rdy_tail[q]->p_cpu_time_left) {
-                rdy_tail->p_nextready = rp;
+                rdy_tail[q]->p_nextready = rp;
                 rdy_tail[q] = rp;
                 rp->p_nextready = NULL;
             } else {
