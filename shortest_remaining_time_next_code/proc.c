@@ -1618,36 +1618,33 @@ void enqueue(
 
     if(q >= 7 && q <= 14) { /* MODIFICADO: verificando se eh processo de usuario */
         /* Now add the process to the queue. */
-        /* Now add the process to the queue. */
-        /*if(!rdy_head[q]) {
+        if(!rdy_head[q]) {
             rdy_head[q] = rdy_tail[q] = rp;
             rp->p_nextready = NULL;
         } else {
-            if(rp->p_cpu_time_left < rdy_head[q]->p_cpu_time_left) {
+            if(rp->p_cpu_time_left <= rdy_head[q]->p_cpu_time_left) {
                 rp->p_nextready = rdy_head[q];
                 rdy_head[q] = rp;
             } else if(rp->p_cpu_time_left >= rdy_tail[q]->p_cpu_time_left) {
                 rdy_tail[q]->p_nextready = rp;
-                rdy_tail[q] = rp;
                 rp->p_nextready = NULL;
+                rdy_tail[q] = rp;
             } else {
 		        struct proc *aux;
 		        aux = rdy_head[q];
-		        while(rp->p_cpu_time_left > aux->p_nextready->p_cpu_time_left) aux = aux->p_nextready;
-		        rp->p_nextready = aux->p_nextready;
-		        aux->p_nextready = rp;
+		        int i = 0;
+		        //while(rp->p_cpu_time_left > aux->p_nextready->p_cpu_time_left) aux = aux->p_nextready;
+		        while(aux->p_nextready) {
+		            if(rp->p_cpu_time_left > aux->p_nextready->p_cpu_time_left) {
+		                aux = aux->p_nextready;
+	                } else {
+	                    break;
+	                }
+		        }
+	            rp->p_nextready = aux->p_nextready;
+	            aux->p_nextready = rp;
             }
-        }*/
-        /* Now add the process to the queue. */
-          if (!rdy_head[q]) {		/* add to empty queue */
-              rdy_head[q] = rdy_tail[q] = rp; 		/* create a new queue */
-              rp->p_nextready = NULL;		/* mark new end */
-          } 
-          else {					/* add to tail of queue */
-              rdy_tail[q]->p_nextready = rp;		/* chain tail of queue */	
-              rdy_tail[q] = rp;				/* set new queue tail */
-              rp->p_nextready = NULL;		/* mark new end */
-          }
+        }
     } else {
           /* Now add the process to the queue. */
           if (!rdy_head[q]) {		/* add to empty queue */
