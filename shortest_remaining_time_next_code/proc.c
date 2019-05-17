@@ -1596,64 +1596,48 @@ asyn_error:
  *===========================================================================*/
 void enqueue(
   register struct proc *rp	/* this process is now runnable */
-)
-{
-/* Add 'rp' to one of the queues of runnable processes.  This function is 
- * responsible for inserting a process into one of the scheduling queues. 
- * The mechanism is implemented here.   The actual scheduling policy is
- * defined in sched() and pick_proc().
- *
- * This function can be used x-cpu as it always uses the queues of the cpu the
- * process is assigned to.
- */
-
-// time remaining left - n usamos mais prioridade
-    int q = rp->p_priority;	 		/* scheduling queue to use */
-    struct proc **rdy_head, **rdy_tail;
-
-    assert(proc_is_runnable(rp));
-
-    assert(q >= 0);
-
-    rdy_head = get_cpu_var(rp->p_cpu, run_q_head);
-    rdy_tail = get_cpu_var(rp->p_cpu, run_q_tail);
-
-    if(q >= 7 && q <= 14) { /* MODIFICADO: verificando se eh processo de usuario */
-        /* Now add the process to the queue. */
-        /* Now add the process to the queue. */
-        if(!rdy_head[q]) {		/* add to empty queue */
-            rdy_head[q] = rdy_tail[q] = rp; 		/* create a new queue */
-            rp->p_nextready = NULL;		/* mark new end */
-        } else {
-            if(rp->p_cpu_time_left < rdy_head[q]->p_cpu_time_left) {
-                rp->p_nextready = rdy_head[q];
-                rdy_head[q] = rp;
-            } else if(rp->p_cpu_time_left >= rdy_tail[q]->p_cpu_time_left) {
-                rdy_tail[q]->p_nextready = rp;
-                rdy_tail[q] = rp;
-                rp->p_nextready = NULL;
-            } else {
-		        struct proc *aux;
-		        aux = rdy_head[q];
-		        while(rp->p_cpu_time_left > aux->p_nextready->p_cpu_time_left) aux = aux->p_nextready;
-		        rp->p_nextready = aux->p_nextready;
-		        aux->p_nextready = rp;
-            }
-        }
-    } else {
-          /* Now add the process to the queue. */
-          if (!rdy_head[q]) {		/* add to empty queue */
-              rdy_head[q] = rdy_tail[q] = rp; 		/* create a new queue */
-              rp->p_nextready = NULL;		/* mark new end */
-          } 
-          else {					/* add to tail of queue */
-              rdy_tail[q]->p_nextready = rp;		/* chain tail of queue */	
-              rdy_tail[q] = rp;				/* set new queue tail */
-              rp->p_nextready = NULL;		/* mark new end */
-          }
+){
+  int q = rp->p_priority;	 		/* scheduling queue to use */
+  struct proc **rdy_head, **rdy_tail;
+  assert(proc_is_runnable(rp));
+  assert(q >= 0);
+  rdy_head = get_cpu_var(rp->p_cpu, run_q_head);
+  rdy_tail = get_cpu_var(rp->p_cpu, run_q_tail);
+  /////////////////////////////
+  // Inicio do Mecanismo TimeLeft ASC
+  // Inicio do Mecanismo TimeLeft ASC
+  // Inicio do Mecanismo TimeLeft ASC 
+  /////////////////////////////
+  if (!rdy_head[q]) {		/* empty queue */
+  	rdy_head[q] = rdy_tail[q] = rp; 		/* create a queue */
+  	rp->p_nextready = NULL;		/* first->next = null */
+  }else { // there are a queue
+  	// do the insertion on the correct index
+  	if( rp->p_cpu_time_left < rdy_head[q]->p_cpu_time_left ){
+  		rp->p_nextready=rdy_head[q];/*rp is the new head*/
+  		rdy_head[q]=rp;
+   	}else if( rp->p_cpu_time_left >= rdy_tail[q]->p_cpu_time_left ){
+      rdy_tail[q]->p_nextready=rp;/*rp is the new tail*/
+      rp->p_nextready=NULL;
+      rdy_tail[q]=rp;
+    }else{
+    	struct proc *cursor = rdy_head[q];
+    	while(cursor->p_nextready->p_cpu_time_left < rp->p_cpu_time_left)
+          cursor=cursor->p_nextready;// find rp location in queue
+        /*insert rp between index and index->p_nextready*/
+        rp->p_nextready = cursor->p_nextready;
+        cursor->p_nextready = rp;
     }
 
-    if (cpuid == rp->p_cpu) {
+  }
+  /////////////////////////////
+  // Fim do Mecanismo TimeLeft ASC
+  // Fim do Mecanismo TimeLeft ASC
+  // Fim do Mecanismo TimeLeft ASC
+  /////////////////////////////
+
+
+  if (cpuid == rp->p_cpu) {
 	  /*
 	   * enqueueing a process with a higher priority than the current one,
 	   * it gets preempted. The current process must be preemptible. Testing
