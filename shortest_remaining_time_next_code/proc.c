@@ -1645,7 +1645,7 @@ void enqueue(
 	            aux->p_nextready = rp;
             }
         }
-    } else { /* Se nao, fazer procedimento padrao
+    } else { /* Se nao, fazer procedimento padrao */
           /* Now add the process to the queue. */
           if (!rdy_head[q]) {		/* add to empty queue */
               rdy_head[q] = rdy_tail[q] = rp; 		/* create a new queue */

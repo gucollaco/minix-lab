@@ -1,6 +1,8 @@
-// Gustavo Martins Collaço 111851
-// Tamires Beatriz da Silva Lucena 111866
-/* Function prototypes. */
+/* Gustavo Martins Collaco 111851
+ * Tamires Beatriz da Silva Lucena 111866
+ *
+ * Function prototypes.
+ */
 
 struct schedproc;
 

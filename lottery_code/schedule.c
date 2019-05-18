@@ -1,6 +1,7 @@
-// Gustavo Martins Collaço 111851
-// Tamires Beatriz da Silva Lucena 111866
-/* This file contains the scheduling policy for SCHED
+/* Gustavo Martins Collaco 111851
+ * Tamires Beatriz da Silva Lucena 111866
+ *
+ * This file contains the scheduling policy for SCHED
  *
  * The entry points are:
  *   do_noquantum:        Called on behalf of process' that run out of quantum
