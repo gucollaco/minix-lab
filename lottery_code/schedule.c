@@ -20,6 +20,7 @@ static unsigned balance_timeout;
 int total_tickets = 0; /* MODIFICADO: variavel para manter a quantidade total de tickets */
 
 #define BALANCE_TIMEOUT	5 /* how often to balance queues in seconds */
+#define MAX_TICKETS	20 /* MODIFICADO: quantidade maxima de tickets que podem ser atribuidos */
 
 static int schedule_process(struct schedproc * rmp, unsigned flags);
 
@@ -224,6 +225,8 @@ int do_start_scheduling(message *m_ptr)
 		 * from the parent */
 		rmp->priority   = rmp->max_priority;
 		rmp->time_slice = m_ptr->m_lsys_sched_scheduling_start.quantum;
+		rmp->tickets = MAX_TICKETS;     /* MODIFICADO: colocando o maximo de tickets, por ser um processo de sistema */
+		total_tickets += rmp->tickets;  /* MODIFICADO: somando os tickets do processo no total de tickets */
 		break;
 		
 	case SCHEDULING_INHERIT:
@@ -236,6 +239,11 @@ int do_start_scheduling(message *m_ptr)
 
 		rmp->priority = schedproc[parent_nr_n].priority;
 		rmp->time_slice = schedproc[parent_nr_n].time_slice;
+		rmp->tickets = MAX_TICKETS - (1 * rmp->priority);
+	   /* MODIFICADO: quando processo for filho, vamos sortear a quantidade de tickets, para que ele tenha uma chance justa de ser executado
+	    * Consideramos remover do total, o valor da prioridade
+		*/
+		total_tickets += rmp->tickets; /* MODIFICADO: somando os tickets do processo no total de tickets */
 		break;
 		
 	default: 
@@ -254,10 +262,12 @@ int do_start_scheduling(message *m_ptr)
 
 	/* Schedule the process, giving it some quantum */
 	pick_cpu(rmp);
-	while ((rv = schedule_process(rmp, SCHEDULE_CHANGE_ALL)) == EBADCPU) {
+	
+	struct schedproc *proc_winner = lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
+	while ((rv = schedule_process(proc_winner, SCHEDULE_CHANGE_ALL)) == EBADCPU) {
 		/* don't try this CPU ever again */
-		cpu_proc[rmp->cpu] = CPU_DEAD;
-		pick_cpu(rmp);
+		cpu_proc[proc_winner->cpu] = CPU_DEAD;
+		pick_cpu(proc_winner);
 	}
 
 	if (rv != OK) {
