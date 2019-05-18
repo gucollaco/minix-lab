@@ -264,10 +264,10 @@ int do_start_scheduling(message *m_ptr)
 	pick_cpu(rmp);
 	
 	struct schedproc *proc_winner = lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
-	while ((rv = schedule_process(proc_winner, SCHEDULE_CHANGE_ALL)) == EBADCPU) {
+	while ((rv = schedule_process(rmp, SCHEDULE_CHANGE_ALL)) == EBADCPU) {
 		/* don't try this CPU ever again */
-		cpu_proc[proc_winner->cpu] = CPU_DEAD;
-		pick_cpu(proc_winner);
+		cpu_proc[rmp->cpu] = CPU_DEAD;
+		pick_cpu(rmp);
 	}
 
 	if (rv != OK) {
