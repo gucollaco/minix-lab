@@ -1,4 +1,7 @@
-/* This file contains essentially all of the process and message handling.
+/* Gustavo Martins Collaço 111851 
+ * Tamires Beatriz da Silva Lucena 111866
+ *
+ * This file contains essentially all of the process and message handling.
  * Together with "mpx.s" it forms the lowest layer of the MINIX kernel.
  * There is one entry point from the outside:
  *
@@ -1621,14 +1624,16 @@ void enqueue(
             rdy_head[q] = rdy_tail[q] = rp;
             rp->p_nextready = NULL;
         } else {
-            if(rp->p_cpu_time_left <= rdy_head[q]->p_cpu_time_left) {
+            if(rp->p_cpu_time_left <= rdy_head[q]->p_cpu_time_left) { /* Verificar se processo que estah chegando entra no inicio da fila */
                 rp->p_nextready = rdy_head[q];
                 rdy_head[q] = rp;
-            } else if(rp->p_cpu_time_left >= rdy_tail[q]->p_cpu_time_left) {
+            } else if(rp->p_cpu_time_left >= rdy_tail[q]->p_cpu_time_left) { /* Verificar se processo que estah chegando entra no final da fila */
                 rdy_tail[q]->p_nextready = rp;
                 rp->p_nextready = NULL;
                 rdy_tail[q] = rp;
-            } else {
+            } else { /* Caso nenhuma das opcoes acima, temos que percorrer a fila enquanto o p_cpu_time_left for maior que o next do aux
+                      * para encaixar na posicao correta
+                      */
 		        struct proc *aux;
 		        aux = rdy_head[q];
 		        
@@ -1640,7 +1645,7 @@ void enqueue(
 	            aux->p_nextready = rp;
             }
         }
-    } else {
+    } else { /* Se nao, fazer procedimento padrao
           /* Now add the process to the queue. */
           if (!rdy_head[q]) {		/* add to empty queue */
               rdy_head[q] = rdy_tail[q] = rp; 		/* create a new queue */
