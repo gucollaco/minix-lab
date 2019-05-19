@@ -1804,42 +1804,21 @@ static struct proc * pick_proc(void)
   register struct proc *rp;			/* process to run */
   struct proc **rdy_head;
   int q;				/* iterate over queues */
-  rdy_head = get_cpulocal_var(run_q_head);
 
-  register struct proc *aux; /* MODIFICADO: ponteiro que ira percorrer as filas */
-  int total_tickets = 0; /* MODIFICADO: variavel para guardar o total de tickets */
-  
-  /* MODIFICADO: percorrer todos os processos, atribuindo os tickets e somando a variavel que acumula o total */
-  for (q=0; q < NR_SCHED_QUEUES; q++) {
-    aux = rdy_head[q];
-    while(aux) { /* Percorrendo a fila de prioridade q */
-       /* Removendo do MAX_TICKETS, o valor da prioridade atual; dessa forma,
-        * quanto maior for a prioridade (menor valor), maior a quantidade de tickets
-        */
-        aux->p_tickets = MAX_TICKETS - q; 
-        total_tickets += aux->p_tickets;
-        aux = aux->p_nextready;
-    }
-  }
-  
-  
-  /* MODIFICADO: realizacao da loteria */
-  int random = (rando()%total_tickets)+1; /* MODIFICADO: variavel que recebe o ticket sorteado */
-  int winner = 0; /* MODIFICADO: variavel para acumular os tickets, ateh que se encontre o vencedor */
-  
-  for (q=0; q < NR_SCHED_QUEUES; q++) {
-    aux = rdy_head[q];
-    while(aux) {
-        winner += aux->p_tickets;
-        if(winner >= random) {
-            assert(proc_is_runnable(aux));
-	        if (priv(aux)->s_flags & BILLABLE)
-	            get_cpulocal_var(bill_ptr) = aux; /* bill for system time */
-	        return aux;
-            
-        }
-        aux = aux->p_nextready;
-    }
+  /* Check each of the scheduling queues for ready processes. The number of
+   * queues is defined in proc.h, and priorities are set in the task table.
+   * If there are no processes ready to run, return NULL.
+   */
+  rdy_head = get_cpulocal_var(run_q_head);
+  for (q=0; q < NR_SCHED_QUEUES; q++) {	
+	if(!(rp = rdy_head[q])) {
+		TRACE(VF_PICKPROC, printf("cpu %d queue %d empty\n", cpuid, q););
+		continue;
+	}
+	assert(proc_is_runnable(rp));
+	if (priv(rp)->s_flags & BILLABLE)	 	
+		get_cpulocal_var(bill_ptr) = rp; /* bill for system time */
+	return rp;
   }
   return NULL;
 }
