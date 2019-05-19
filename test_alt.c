@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
                                 }
                                 gettimeofday(&p_end, NULL);
                                 timersub(&p_end, &p_start, &p_time);
-                                printf("IO\t %d\t %g\n",num, SEC(p_time));
+                                printf("IO\t %d\t %f\n",num, SEC(p_time));
                         } else {
                                 gettimeofday(&p_start, NULL);
                                 for(i=0; i<cpu_ops; i++)
