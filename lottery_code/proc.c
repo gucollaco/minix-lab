@@ -1841,21 +1841,7 @@ static struct proc * pick_proc(void)
   int random = (rando()%total_tickets)+1; /* MODIFICADO: variavel que recebe o ticket sorteado */
   int winner = 0; /* MODIFICADO: variavel para acumular os tickets, ateh que se encontre o vencedor */
 
-  for (q=7; q <= 14; q++) {
-    aux = rdy_head[q];
-    while(aux) {
-        winner += aux->p_tickets;
-        if(winner >= random) {
-            assert(proc_is_runnable(aux));
-	        if (priv(aux)->s_flags & BILLABLE)
-	            get_cpulocal_var(bill_ptr) = aux; /* bill for system time */
-	        return aux;
-        }
-        aux = aux->p_nextready;
-    }
-  }
-
-  for (q=15; q <= 15; q++) {	
+  for (q=7; q <= 15; q++) {	
 	if(!(rp = rdy_head[q])) {
 		TRACE(VF_PICKPROC, printf("cpu %d queue %d empty\n", cpuid, q););
 		continue;
