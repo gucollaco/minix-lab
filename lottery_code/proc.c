@@ -1833,8 +1833,10 @@ static struct proc * pick_proc(void)
         winner += aux->p_tickets;
         if(winner >= random) {
             assert(proc_is_runnable(aux));
-	        if (priv(aux)->s_flags & BILLABLE) get_cpulocal_var(bill_ptr) = aux; /* bill for system time */
-	        return aux;
+	        if (priv(aux)->s_flags & BILLABLE) {
+	            get_cpulocal_var(bill_ptr) = aux; /* bill for system time */
+	            return aux;
+            }
         }
         aux = aux->p_nextready;
     }
