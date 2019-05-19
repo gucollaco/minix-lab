@@ -1837,11 +1837,11 @@ static struct proc * pick_proc(void)
 	return rp;
   }
 
-  /* MODIFICADO: realizacao da loteria */
-  int random = (rando()%total_tickets)+1; /* MODIFICADO: variavel que recebe o ticket sorteado */
-  int winner = 0; /* MODIFICADO: variavel para acumular os tickets, ateh que se encontre o vencedor */
+  if(total_tickets > 0) { /* se tem processo de usuario pronto */
+    /* MODIFICADO: realizacao da loteria */
+    int random = (rando()%total_tickets)+1; /* MODIFICADO: variavel que recebe o ticket sorteado */
+    int winner = 0; /* MODIFICADO: variavel para acumular os tickets, ateh que se encontre o vencedor */
 
-  if(total_tickets != 0) { /* se tem processo de usuario pronto */
     for (q=7; q <= 14; q++) {
         aux = rdy_head[q];
         while(aux) {
