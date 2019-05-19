@@ -36,27 +36,13 @@ int main(int argc, char **argv) {
         for(num=0; num<nproc; num++) {
                 pid[num]=fork();
                 if(pid[num]==0) {
-                        // Se num for par, filho eh IO bound,
-                        // senao, eh CPU bund
-                        if((num % 2) == 0) {
-                                gettimeofday(&p_start, NULL);
-                                for(i=0; i<io_ops; i++){
-                                        fprintf(stderr, "Proc:%d i=%ld\n", num, i);
-                                        fflush(stderr);
-                                }
-                                gettimeofday(&p_end, NULL);
-                                timersub(&p_end, &p_start, &p_time);
-                                printf("IO\t %d\t %f\n",num, SEC(p_time));
-                        } else {
-                                gettimeofday(&p_start, NULL);
-                                for(i=0; i<cpu_ops; i++)
-{
-                                        x = (x << 4) - (x << 4);
-                                }
-                                gettimeofday(&p_end, NULL);
-                                timersub(&p_end, &p_start, &p_time);
-                                printf("CPU\t %d\t %f\n",num, SEC(p_time));
+                        gettimeofday(&p_start, NULL);
+                        for(i=0; i<cpu_ops; i++) {
+                                x = (x << 4) - (x << 4);
                         }
+                        gettimeofday(&p_end, NULL);
+                        timersub(&p_end, &p_start, &p_time);
+                        printf("CPU\t %d\t %f\n",num, SEC(p_time));
                         exit(0); // todo filho termina aqui ...
                 }
         }
