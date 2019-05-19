@@ -1806,8 +1806,8 @@ static struct proc * pick_proc(void)
   int q;				/* iterate over queues */
   rdy_head = get_cpulocal_var(run_q_head);
 
-  struct proc *aux; /* MODIFICADO: ponteiro que ira percorrer as filas */
-  unsigned total_tickets = 0; /* MODIFICADO: variavel para guardar o total de tickets */
+  register struct proc *aux; /* MODIFICADO: ponteiro que ira percorrer as filas */
+  int total_tickets = 0; /* MODIFICADO: variavel para guardar o total de tickets */
   
   /* MODIFICADO: percorrer todos os processos, atribuindo os tickets e somando a variavel que acumula o total */
   for (q=0; q < NR_SCHED_QUEUES; q++) {
@@ -1833,10 +1833,10 @@ static struct proc * pick_proc(void)
         winner += aux->p_tickets;
         if(winner >= random) {
             assert(proc_is_runnable(aux));
-	        if (priv(aux)->s_flags & BILLABLE) {
+	        if (priv(aux)->s_flags & BILLABLE)
 	            get_cpulocal_var(bill_ptr) = aux; /* bill for system time */
-	            return aux;
-            }
+	        return aux;
+            
         }
         aux = aux->p_nextready;
     }
