@@ -1805,6 +1805,26 @@ static struct proc * pick_proc(void)
   struct proc **rdy_head;
   int q;				/* iterate over queues */
 
+  register struct proc *aux; /* MODIFICADO: ponteiro que ira percorrer as filas */
+  int total_tickets = 0; /* MODIFICADO: variavel para guardar o total de tickets */
+
+  /* MODIFICADO: percorrer todos os processos, atribuindo os tickets e somando a variavel que acumula o total */
+  for (q=7; q <= 14; q++) {
+    aux = rdy_head[q];
+    while(aux) { /* Percorrendo a fila de prioridade q */
+       /* Removendo do MAX_TICKETS, o valor da prioridade atual; dessa forma,
+        * quanto maior for a prioridade (menor valor), maior a quantidade de tickets
+        */
+        aux->p_tickets = MAX_TICKETS - q; 
+        total_tickets += aux->p_tickets;
+        aux = aux->p_nextready;
+    }
+  }
+
+  /* MODIFICADO: realizacao da loteria */
+  int random = (rando()%total_tickets)+1; /* MODIFICADO: variavel que recebe o ticket sorteado */
+  int winner = 0; /* MODIFICADO: variavel para acumular os tickets, ateh que se encontre o vencedor */
+
   /* Check each of the scheduling queues for ready processes. The number of
    * queues is defined in proc.h, and priorities are set in the task table.
    * If there are no processes ready to run, return NULL.
