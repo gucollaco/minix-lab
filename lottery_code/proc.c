@@ -1821,16 +1821,12 @@ static struct proc * pick_proc(void)
     }
   }
 
-  /* MODIFICADO: realizacao da loteria */
-  int random = (rando()%total_tickets)+1; /* MODIFICADO: variavel que recebe o ticket sorteado */
-  int winner = 0; /* MODIFICADO: variavel para acumular os tickets, ateh que se encontre o vencedor */
-
   /* Check each of the scheduling queues for ready processes. The number of
    * queues is defined in proc.h, and priorities are set in the task table.
    * If there are no processes ready to run, return NULL.
    */
   rdy_head = get_cpulocal_var(run_q_head);
-  for (q=0; q < NR_SCHED_QUEUES; q++) {	
+  for (q=0; q < 7; q++) {	
 	if(!(rp = rdy_head[q])) {
 		TRACE(VF_PICKPROC, printf("cpu %d queue %d empty\n", cpuid, q););
 		continue;
@@ -1840,6 +1836,18 @@ static struct proc * pick_proc(void)
 		get_cpulocal_var(bill_ptr) = rp; /* bill for system time */
 	return rp;
   }
+
+  for (q=7; q <= 15; q++) {	
+	if(!(rp = rdy_head[q])) {
+		TRACE(VF_PICKPROC, printf("cpu %d queue %d empty\n", cpuid, q););
+		continue;
+	}
+	assert(proc_is_runnable(rp));
+	if (priv(rp)->s_flags & BILLABLE)	 	
+		get_cpulocal_var(bill_ptr) = rp; /* bill for system time */
+	return rp;
+  }
+
   return NULL;
 }
 
