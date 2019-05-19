@@ -62,7 +62,9 @@ int rando(void) {
                 Caso ninguem seja o vencedor, o ultimo eh retornado.*/
 struct schedproc *lottery(void) {
     struct schedproc *proc;
-    int i, random, winner = 0;
+    int i;
+    int random;
+    int winner = 0;
     random = (rando()%total_tickets)+1;
 
     for (i = 0; i < NR_PROCS; i++) {
@@ -264,7 +266,7 @@ int do_start_scheduling(message *m_ptr)
 	pick_cpu(rmp);
 	
 	struct schedproc *proc_winner = lottery(); /* MODIFICADO: vamos obter o processo vencedor, antes de realizar o escalonamento */
-	while ((rv = schedule_process(rmp, SCHEDULE_CHANGE_ALL)) == EBADCPU) {
+	while ((rv = schedule_process(proc_winner, SCHEDULE_CHANGE_ALL)) == EBADCPU) {
 		/* don't try this CPU ever again */
 		cpu_proc[rmp->cpu] = CPU_DEAD;
 		pick_cpu(rmp);
