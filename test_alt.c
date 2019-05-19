@@ -35,7 +35,6 @@ int main(int argc, char **argv) {
 
         for(num=0; num<nproc; num++) {
                 pid[num]=fork();
-                struct timeval p_start, p_end, p_time;
                 if(pid[num]==0) {
                         // Se num for par, filho eh IO bound,
                         // senao, eh CPU bund
@@ -56,7 +55,7 @@ int main(int argc, char **argv) {
                                 }
                                 gettimeofday(&p_end, NULL);
                                 timersub(&p_end, &p_start, &p_time);
-                                printf("CPU\t %d\t %g\n",num, SEC(p_time));
+                                printf("CPU\t %d\t %f\n",num, SEC(p_time));
                         }
                         exit(0); // todo filho termina aqui ...
                 }
