@@ -1,7 +1,3 @@
-/* Gustavo Martins Collaco 111851
- * Tamires Beatriz da Silva Lucena 111866
- */
-
 #ifndef PROC_H
 #define PROC_H
 
@@ -31,7 +27,6 @@ struct proc {
   volatile u32_t p_rts_flags;	/* process is runnable only if zero */
   volatile u32_t p_misc_flags;	/* flags that do not suspend the process */
 
-  unsigned p_tickets;	/* MODIFICADO: quantidade de tickets */
   char p_priority;		/* current process priority */
   u64_t p_cpu_time_left;	/* time left to use the cpu */
   unsigned p_quantum_size_ms;	/* assigned time quantum in ms
