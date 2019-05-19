@@ -1807,6 +1807,7 @@ static struct proc * pick_proc(void)
 
   struct proc *aux; /* MODIFICADO: ponteiro que ira percorrer as filas */
   int total_tickets = 0; /* MODIFICADO: variavel para guardar o total de tickets */
+  rdy_head = get_cpulocal_var(run_q_head);
 
   /* MODIFICADO: percorrer todos os processos, atribuindo os tickets e somando a variavel que acumula o total */
   for (q=7; q <= 14; q++) {
@@ -1825,7 +1826,6 @@ static struct proc * pick_proc(void)
    * queues is defined in proc.h, and priorities are set in the task table.
    * If there are no processes ready to run, return NULL.
    */
-  rdy_head = get_cpulocal_var(run_q_head);
   for (q=0; q < 7; q++) {	
 	if(!(rp = rdy_head[q])) {
 		TRACE(VF_PICKPROC, printf("cpu %d queue %d empty\n", cpuid, q););
