@@ -1816,8 +1816,8 @@ static struct proc * pick_proc(void)
        /* Removendo do MAX_TICKETS, o valor da prioridade atual; dessa forma,
         * quanto maior for a prioridade (menor valor), maior a quantidade de tickets
         */
-        aux->p_tickets = MAX_TICKETS; 
-        total_tickets += MAX_TICKETS;
+        aux->p_tickets = MAX_TICKETS - q; 
+        total_tickets += aux->p_tickets;
         aux = aux->p_nextready;
     }
   }
@@ -1841,17 +1841,19 @@ static struct proc * pick_proc(void)
   int random = (rando()%total_tickets)+1; /* MODIFICADO: variavel que recebe o ticket sorteado */
   int winner = 0; /* MODIFICADO: variavel para acumular os tickets, ateh que se encontre o vencedor */
 
-  for (q=7; q <= 14; q++) {
-    aux = rdy_head[q];
-    while(aux) {
-        winner += MAX_TICKETS;
-        if(winner >= random) {
-            assert(proc_is_runnable(aux));
-	        if (priv(aux)->s_flags & BILLABLE)
-	            get_cpulocal_var(bill_ptr) = aux; /* bill for system time */
-	        return aux;
+  if(total_tickets != 0) { /* se tem processo de usuario pronto */
+    for (q=7; q <= 14; q++) {
+        aux = rdy_head[q];
+        while(aux) {
+            winner += aux->p_tickets;
+            if(winner >= random) {
+                assert(proc_is_runnable(aux));
+	            if (priv(aux)->s_flags & BILLABLE)
+	                get_cpulocal_var(bill_ptr) = aux; /* bill for system time */
+	            return aux;
+            }
+            aux = aux->p_nextready;
         }
-        aux = aux->p_nextready;
     }
   }
 
