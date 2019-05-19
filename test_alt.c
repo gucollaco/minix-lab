@@ -35,8 +35,8 @@ int main(int argc, char **argv) {
 
         for(num=0; num<nproc; num++) {
                 pid[num]=fork();
+                struct timeval p_start, p_end, p_time;
                 if(pid[num]==0) {
-                        struct timeval p_start, p_end, p_time;
                         // Se num for par, filho eh IO bound,
                         // senao, eh CPU bund
                         if((num % 2) == 0) {
