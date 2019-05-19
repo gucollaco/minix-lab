@@ -1,3 +1,7 @@
+/* Gustavo Martins Collaco 111851
+ * Tamires Beatriz da Silva Lucena 111866
+ */
+
 #ifndef PROC_H
 #define PROC_H
 
@@ -20,6 +24,7 @@
 #include "priv.h"
 
 struct proc {
+  int p_tickets;		/* MODIFICADO: variavel para guardar os tickets do processo */
   struct stackframe_s p_reg;	/* process' registers saved in stack frame */
   struct segframe p_seg;	/* segment descriptors */
   proc_nr_t p_nr;		/* number of this process (for fast access) */
